@@ -1,2 +1,2 @@
-# PGGA-Interface-PHP-
+# PGGA-Interface-PHP
 Pokemon Go - Gym Analysis Interface (PHP)
