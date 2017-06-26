@@ -351,7 +351,8 @@ class PGGA
 		arsort($trainers['Instinct']);
 
 		// Create tables (one for each team)
-		$ret .= "<p><table><tr><th colspan=3>All Trainers</th></tr><tr>";
+		$ret .= "<p><table><tr><th colspan=3>All Trainers</th></tr>";
+		$ret .= "<tr><td colspan=3 style=\"border:0px;\"><font size=\"-2\"><br>Note: Use column headers to sort table</font></td></tr><tr>";
 		foreach ($trainers as $team => $team_trainers)
 		{
 			//if ($team == "Uncontested") continue;

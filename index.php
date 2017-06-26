@@ -50,14 +50,14 @@ $SHOW_MESSAGE = false;
 
 <script src="sorttable.js"></script>
 
-<!--
 <style>
-	table.sortable th:not(.sorttable_sorted):not(.sorttable_sorted_reverse):not(.sorttable_nosort):after
-	{ 
-		content: " \25B4\25BE" 
-	}
+table.sortable th
+{ 
+	cursor: pointer;
+	cursor: hand;
+	/* content: " \25B4\25BE" */
+}
 </style>
--->
 
 </head>
 
