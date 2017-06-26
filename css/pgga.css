@@ -50,7 +50,7 @@ A:HOVER { color: black; text-decoration: underline;  }
 {
 	width: 100%;
 	height: auto;
-	background: url('../img/bg_tran3.png') top no-repeat;
+	/* background: url('../img/bg_tran3.png') top no-repeat; */
 	border-top:    1px solid  #e95000;
 	border-right:  2px solid #e95000;
 	border-bottom: 1px solid #e95000;
@@ -62,7 +62,7 @@ A:HOVER { color: black; text-decoration: underline;  }
 {
 	width: 1354px;
 	height: 50px;
-	background:url('../img/bottom.png') top no-repeat;
+	/* background:url('../img/bottom.png') top no-repeat; */
 	border-top:    1px solid  #e95000;
 }
 
@@ -287,6 +287,7 @@ padding: 20 5 20 0;
 	margin-top: 1px;
 	/*display: inline;*/
 	display: table;
+	width: 158px;
 
 	color: black;
 	font-size: 8pt;
@@ -300,7 +301,7 @@ padding: 20 5 20 0;
 }
 #leftmenu ul li a {
 	position: relative;
-	width: 140px; /* width + padding-left = 120px */
+	/*width: 140px;  width + padding-left = 120px */
 	height: 18px;
 	
 	/*display: block;*/

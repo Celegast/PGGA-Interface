@@ -93,12 +93,12 @@ table.sortable th
 	// Gym History
 	echo "<li><a href=\"index.php?gym=History\"";
 	if ($_gym == "History") echo " id=\"selected\"";
-	echo ">Gym History</a>&nbsp;</li>\n";
+	echo ">Gym History</a></li>\n";
 
 	// Volatility Index
 	echo "<li><a href=\"index.php?gym=VIX\"";
 	if ($_gym == "VIX") echo " id=\"selected\"";
-	echo ">Volatility Index (VIX)</a>&nbsp;</li>\n";
+	echo ">Volatility Index (VIX)</a></li>\n";
 
 	echo "</ul></div>\n"; // End: Left menu
 
