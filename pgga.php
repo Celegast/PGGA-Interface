@@ -763,7 +763,8 @@ class PGGA
 		if (count($trainer['Gyms']) == 0)
 			return $ret;
 			
-		$SECTOR = (current($trainer['Gyms'])['Sector'] == "") ? false : true;
+		$tmp = current($trainer['Gyms']);
+		$SECTOR = ($tmp['Sector'] == "") ? false : true;
 
 		// Sort by CP
 		usort($trainer['Gyms'], 'cpDescSort');
