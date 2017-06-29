@@ -15,6 +15,12 @@ function countDescSort($item1,$item2)
 	return ($item1['Count'] < $item2['Count']) ? 1 : -1;
 }
 
+function cpDescSort($item1,$item2)
+{
+	if ($item1['CP'] == $item2['CP']) return 0;
+	return ($item1['CP'] < $item2['CP']) ? 1 : -1;
+}
+
 function sectorAscSort($item1,$item2)
 {
 	if ($item1['Sector'] == $item2['Sector']) return 0;
@@ -352,7 +358,7 @@ class PGGA
 
 		// Create tables (one for each team)
 		$ret .= "<p><table><tr><th colspan=3>All Trainers</th></tr>";
-		$ret .= "<tr><td colspan=3 style=\"border:0px;\"><font size=\"-2\"><br>Note: Use column headers to sort table</font></td></tr><tr>";
+		$ret .= "<tr><td colspan=3 style=\"border:0px;\"><font size=\"-2\"><br>Note: Use column headers to sort tables</font></td></tr><tr>";
 		foreach ($trainers as $team => $team_trainers)
 		{
 			//if ($team == "Uncontested") continue;
@@ -370,7 +376,7 @@ class PGGA
 			foreach ($team_trainers as $trainer => $trainer_info)
 			{
 				$table[++$index] = array( 
-					str_replace(" ","&nbsp;",$trainer), 
+					sprintf("<a href=\"?trainer=%s\">%s</a>",$trainer,$trainer),
 					$trainer_info['Trainer_Level'],
 					$trainer_info['Count'],
 					$trainer_info['MaxCP'], 
@@ -720,6 +726,92 @@ class PGGA
 		return $ret;
 	}
 
+	
+	function Create_Trainer_Table($trainer_name, $timestamp, &$trainer_team)
+	{
+		$ret = "";
+		
+	error_reporting(E_ALL);// & ~E_NOTICE);
+		//$lvl40_trainers = array();
+		$trainer = array( 'Team' => "", 'Trainer_Level' => 0, 'Gyms' => array() );
+		
+		foreach ($this->gyms as $gym)
+		{
+			if (!isset($gym['Trainers']))
+				continue;
+				
+			foreach ($gym['Trainers'] as $key => $t)
+			{
+				if ($t['Trainer'] == $trainer_name)
+				{
+					$trainer['Team'] = $gym['Team'];
+					$trainer['Trainer_Level'] = $t['Trainer_Level'];
+				
+					$trainer['Gyms'][] = array(
+						'Gym_Name' => $gym['Name'],
+						'Sector' => isset($gym['Sector']) ? $gym['Sector'] : "",
+						'Pokemon' => $t['Pokemon'],
+						'CP' => $t['CP'],
+						'Gym_Position' => ($key+1),
+					);
+					
+					break;
+				}
+			}
+		}
+		
+		if (count($trainer['Gyms']) == 0)
+			return $ret;
+			
+		$SECTOR = (current($trainer['Gyms'])['Sector'] == "") ? false : true;
+
+		// Sort by CP
+		usort($trainer['Gyms'], 'cpDescSort');
+
+		// Create table
+		$ret .= "<p>";
+
+		$table = array();
+		//$title = "<b>" . $trainer_name . " (" . $timestamp . ", Team " . $trainer['Team'] . ", Level " . $trainer['Trainer_Level'] . ")</b>";
+		$title = "<b>" . $timestamp . ", Level " . $trainer['Trainer_Level'] . "</b>";
+		
+		// Build header row
+		$header_row = ($SECTOR) ? "Nr,Gym,Sector,Pokemon,CP,Position" : "Nr,Gym,Pokemon,CP,Position";
+		$table['Header'] = explode(",",$header_row);
+		
+		// Fill basic table content
+		$index = 0;
+
+		foreach ($trainer['Gyms'] as $g)
+		{
+			if ($SECTOR)
+				$table[++$index] = array(
+					$index,
+					$g['Gym_Name'],
+					$g['Sector'],
+					$g['Pokemon'],
+					$g['CP'],
+					$g['Gym_Position'],
+				);
+			else
+				$table[++$index] = array(
+					$index,
+					$g['Gym_Name'],
+					$g['Pokemon'],
+					$g['CP'],
+					$g['Gym_Position'],
+				);
+		}
+
+		$ret .= $this->Table_To_HTML($table,$title,620,true);
+
+		$ret .= "</p>";
+		
+		$trainer_team = $trainer['Team']; // Additional return variable
+
+		return $ret;
+	}
+	
 }
 
 /*
