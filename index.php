@@ -15,15 +15,22 @@ foreach (glob($_data_folder."/*.txt") as $filename) {
 }
 //print_r($_data_files);
 
-if (isset($_GET['gym']))
-	$_gym = htmlspecialchars(strip_tags($_GET['gym']));
-else
-	$_gym = "";
-
 if (isset($_GET['mid']))
 	$_mid = htmlspecialchars(strip_tags($_GET['mid']));
 else
 	$_mid = end($_data_files);
+
+if (isset($_GET['gym']))
+{
+	$_gym = htmlspecialchars(strip_tags($_GET['gym']));
+	$_mid = "Gym"; // Alter Menu-ID
+}
+
+if (isset($_GET['trainer']))
+{
+	$_trainer = htmlspecialchars(strip_tags($_GET['trainer']));
+	$_mid = "Trainer"; // Alter Menu-ID
+}
 
 
 // Vars
@@ -186,6 +193,47 @@ switch ($_mid)
 
 			echo $pgga->Create_Volatility_Index_Table($gym_list_1,$_data_timestamps);
 			//print_r($gym_list_1);
+			
+			break;
+		}
+	case "Trainer":
+		{
+			if (sizeof($_data_files) <= 1)
+				continue;
+			
+			// Reverse arrays
+			$_data_timestamps = array_reverse($_data_timestamps);
+			$_data_files = array_reverse($_data_files);
+				
+			echo "<h1>" . $_trainer . "</h1>\r\n";
+				
+			$pgga = new PGGA();
+			$trainer_team = "";
+			
+			$i = 0;
+			reset($_data_timestamps);
+			
+			foreach ($_data_files as $data_file)
+			{
+				$pgga->Parse_Gyms_From_Html_File($data_file,$pokedex);
+				$tmp = $pgga->Create_Trainer_Table($_trainer, current($_data_timestamps), $trainer_team);
+				
+				if ($i == 0) // Header
+				{
+					echo "<h2>" . $trainer_team . "</h2>\r\n";
+					echo "<p><font size=\"-2\"><br>Note: Use column headers to sort tables</font></p>\r\n";
+
+					// Pack all following tables into one big table to keep all centered
+					echo "<p><table><tr><td style=\"border:0px;\">";
+				}
+				
+				echo $tmp;
+				next($_data_timestamps);
+				
+				$i++;
+			}
+
+			echo "</td></tr></table></p>";
 			
 			break;
 		}
