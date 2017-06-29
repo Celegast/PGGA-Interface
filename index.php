@@ -18,12 +18,12 @@ foreach (glob($_data_folder."/*.txt") as $filename) {
 if (isset($_GET['gym']))
 	$_gym = htmlspecialchars(strip_tags($_GET['gym']));
 else
-	$_gym = end($_data_files);
+	$_gym = "";
 
 if (isset($_GET['mid']))
 	$_mid = htmlspecialchars(strip_tags($_GET['mid']));
 else
-	$_mid = 0;
+	$_mid = end($_data_files);
 
 
 // Vars
@@ -82,8 +82,8 @@ table.sortable th
 	$nr = 1;
 	foreach ($_data_files as $data_file)
 	{
-		echo "<li><a href=\"index.php?gym=" . $data_file . "\"";
-		if ($_gym == $data_file)
+		echo "<li><a href=\"index.php?mid=" . $data_file . "\"";
+		if ($_mid == $data_file)
 			echo " id=\"selected\"";
 		
 		$_data_timestamps[] = str_replace(array('.txt','data/'),'',$data_file);//date('Y-m-d H:i:s', filemtime($data_file));
@@ -91,13 +91,13 @@ table.sortable th
 	}
 
 	// Gym History
-	echo "<li><a href=\"index.php?gym=History\"";
-	if ($_gym == "History") echo " id=\"selected\"";
+	echo "<li><a href=\"index.php?mid=History\"";
+	if ($_mid == "History") echo " id=\"selected\"";
 	echo ">Gym History</a></li>\n";
 
 	// Volatility Index
-	echo "<li><a href=\"index.php?gym=VIX\"";
-	if ($_gym == "VIX") echo " id=\"selected\"";
+	echo "<li><a href=\"index.php?mid=VIX\"";
+	if ($_mid == "VIX") echo " id=\"selected\"";
 	echo ">Volatility Index (VIX)</a></li>\n";
 
 	echo "</ul></div>\n"; // End: Left menu
@@ -118,7 +118,7 @@ switch ($_mid)
 if ($SHOW_MESSAGE)
 	echo "<p id=\"message\">" . $MESSAGE . "</p>";
 
-switch ($_gym)
+switch ($_mid)
 {
 	case "History":
 		{
@@ -193,13 +193,13 @@ switch ($_gym)
 		{
 error_reporting(E_ALL);
 
-			if ($_gym == "" || !file_exists($_gym))
+			if ($_mid == "" || !file_exists($_mid))
 			{
 				echo "<br>No files in folder '\\" . $_data_folder . "'.";
 				continue;
 			}
 
-			$filename = $_gym;
+			$filename = $_mid;
 
 			$pgga = new PGGA();
 			$pgga->Parse_Gyms_From_Html_File($filename,$pokedex);
