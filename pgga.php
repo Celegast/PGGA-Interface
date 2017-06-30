@@ -199,7 +199,15 @@ class PGGA
 
 		// Title
 		if ($title != "")
-			$s .= "<table width=" . $width . "><tr><td style=\"border:0px;\">" . $title . "</td></tr></table>\n";
+		{
+			if (strpos($title, '|') !== false)
+			{
+				$tmp = explode('|',$title);
+				$s .= "<table width=" . $width . "><tr><td style=\"border:0px;\">" . $tmp[1] . "</td></tr><tr><td id=\"" . $tmp[0] . "\" style=\"border:0px;\"></td></tr></table>\n";
+			}
+			else
+				$s .= "<table width=" . $width . "><tr><td style=\"border:0px;\">" . $title . "</td></tr></table>\n";
+		}
 
 		$s .= "<table width=" . $width;
 
@@ -610,7 +618,7 @@ class PGGA
 		$index = 1;
 		foreach ($gym_list as $gym_name => $gym)
 		{
-			$table[$index][] = $gym_name;
+			$table[$index][] = sprintf("<a href=\"?gym=%s\">%s</a>",urlencode($gym_name),$gym_name);
 			
 			if (isset($gym['Sector']))
 				$table[$index][] = $gym['Sector'];
@@ -696,7 +704,7 @@ class PGGA
 		$index = 1;
 		foreach ($gym_list as $gym_name => $gym)
 		{
-			$table[$index][] = $gym_name;
+			$table[$index][] = sprintf("<a href=\"?gym=%s\">%s</a>",urlencode($gym_name),$gym_name);
 			
 			if (isset($gym['Sector']))
 				$table[$index][] = $gym['Sector'];
@@ -748,7 +756,7 @@ class PGGA
 					$trainer['Trainer_Level'] = $t['Trainer_Level'];
 				
 					$trainer['Gyms'][] = array(
-						'Gym_Name' => $gym['Name'],
+						'Gym_Name' => sprintf("<a href=\"?gym=%s\">%s</a>",urlencode($gym['Name']),$gym['Name']),
 						'Sector' => isset($gym['Sector']) ? $gym['Sector'] : "",
 						'Pokemon' => $t['Pokemon'],
 						'CP' => $t['CP'],
@@ -813,6 +821,61 @@ class PGGA
 		return $ret;
 	}
 	
+	
+	function Create_Individual_Gym_Table($gym_name, $timestamp, &$sector)
+	{
+		$ret = "";
+		
+	error_reporting(E_ALL);// & ~E_NOTICE);
+
+		$target_gym = null;
+		
+		foreach ($this->gyms as $gym)
+		{
+			if ($gym['Name'] == $gym_name)
+			{
+				$target_gym = $gym;
+				break;
+			}
+		}
+		
+		if ($target_gym == null || !isset($target_gym['Trainers']))
+			return $ret;
+			
+		// Create table
+		$ret .= "<p>";
+
+		$table = array();
+		$title = $target_gym['Team'] . "|<b>" . $timestamp . ", Pr " . $target_gym['Prestige'] . "</b>"; // Team (denotes color) | Info
+		
+		// Build header row
+		$header_row = "Nr,Trainer,Lvl,Pokemon,CP";
+		$table['Header'] = explode(",",$header_row);
+		
+		// Fill basic table content
+		$index = 0;
+
+		foreach ($target_gym['Trainers'] as $t)
+		{
+			$table[++$index] = array(
+				$index,
+				sprintf("<a href=\"?trainer=%s\">%s</a>",$t['Trainer'],$t['Trainer']),
+				$t['Trainer_Level'],
+				$t['Pokemon'],
+				$t['CP'],
+			);
+		}
+
+		$ret .= $this->Table_To_HTML($table,$title,620,true);
+
+		$ret .= "</p>";
+		
+		if (isset($target_gym['Sector']))
+			$sector = $target_gym['Sector']; // Additional return variable
+
+		return $ret;
+	}
+
 }
 
 /*

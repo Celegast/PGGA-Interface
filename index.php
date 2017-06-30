@@ -237,6 +237,49 @@ switch ($_mid)
 			
 			break;
 		}
+	case "Gym":
+		{
+			if (sizeof($_data_files) <= 1)
+				continue;
+			
+			// Reverse arrays
+			$_data_timestamps = array_reverse($_data_timestamps);
+			$_data_files = array_reverse($_data_files);
+				
+			echo "<h1>" . $_gym . "</h1>\r\n";
+				
+			$pgga = new PGGA();
+			$sector = "";
+			
+			$i = 0;
+			reset($_data_timestamps);
+			
+			foreach ($_data_files as $data_file)
+			{
+				$pgga->Parse_Gyms_From_Html_File($data_file,$pokedex);
+				$tmp = $pgga->Create_Individual_Gym_Table($_gym, current($_data_timestamps), $sector);
+				
+				if ($i == 0) // Header
+				{
+					if ($sector != "")
+						echo "<h2>Sector " . $sector . "</h2>\r\n";
+					
+					echo "<p><font size=\"-2\"><br>Note: Use column headers to sort tables</font></p>\r\n";
+
+					// Pack all following tables into one big table to keep all centered
+					echo "<p><table><tr><td style=\"border:0px;\">";
+				}
+				
+				echo $tmp;
+				next($_data_timestamps);
+				
+				$i++;
+			}
+
+			echo "</td></tr></table></p>";
+			
+			break;
+		}
 	default:
 		{
 error_reporting(E_ALL);
