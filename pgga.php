@@ -55,6 +55,7 @@ function in_array_r($needle, $haystack, $strict = false) {
 class PGGA
 {
 	public $gyms = array();
+	public $IsPostRAID = false;
 	
 	function __construct()
 	{
@@ -108,6 +109,11 @@ class PGGA
 
 				$content[$r][$c++] = $cell;
 			}
+			
+			// Raid string detection
+			if (preg_match("{Level (\d) Raid bis ([0-1]?\d|2[0-3]):([0-5]?\d):([0-5]?\d)Uhr}",$row,$m))
+				$content[$r][$c++] = sprintf("Level %s raid until %s:%s:%s o'clock",$m[1],$m[2],$m[3],$m[4]);
+			
 			$r++;
 		}
 		
@@ -122,26 +128,47 @@ class PGGA
 			
 			$gym['Name'] = array_shift($row);
 			$gym['Team'] = array_shift($row);
-			$gym['Prestige'] = str_replace("Pr: ","",array_shift($row));
+			
+			if (strpos(current($row), 'Freie Plätze: ') !== false)
+				$gym['FreeSpots'] = str_replace("Freie Plätze: ","",array_shift($row));
+			else
+				$gym['Prestige'] = str_replace("Pr: ","",array_shift($row));
 			
 			// Players
-			while (sizeof($row) > 2)
+			while (sizeof($row) > 3)
 			{
 				$mon = explode(", ",array_shift($row));
 				$trainer = explode(" (",str_replace(")","",array_shift($row)));
+				$lvl = explode(", seit ",$trainer[1]);
 				
-				//if (isset($trainer[0]) && isset($trainer[1]) && isset($pokedex[$mon[0]]) && isset($mon[1]))
-					$gym['Trainers'][] = array( "Trainer" => $trainer[0], "Trainer_Level" => $trainer[1], "Pokemon" => $pokedex[$mon[0]], "CP" => $mon[1] );
+				if (isset($lvl[1]))
+				{
+					$gym['Trainers'][] = array( "Trainer" => $trainer[0], "Trainer_Level" => $lvl[0], "Pokemon" => $pokedex[$mon[0]], "CP" => $mon[1], "AssignedSince" => $lvl[1] );
+					if (!$this->IsPostRAID) $this->IsPostRAID = true;
+				}
+				else
+					$gym['Trainers'][] = array( "Trainer" => $trainer[0], "Trainer_Level" => $lvl[0], "Pokemon" => $pokedex[$mon[0]], "CP" => $mon[1] );
 					
 				if (substr($row[0],0,15) === "Letztes Update:")
 					break;
 			}
 			
+			// Erase duplicate trainers (caused by a bug on gomap.eu in the new post-raid update)
+			if (isset($gym['Trainers']))
+			{
+				$gym['Trainers'] = unique_multidim_array($gym['Trainers'],"Trainer");
+				$gym['Trainers'] = array_values($gym['Trainers']); // Reset keys
+			}
+
 			$gym['LastUpdate'] = str_replace("Letztes Update: ","",array_shift($row));
 			
 			// (optional) Sector number
 			if (sizeof($row) > 0)
 				$gym['Sector'] = array_shift($row);
+			
+			// (optional) Raid
+			if (sizeof($row) > 0)
+				$gym['Raid'] = array_shift($row);
 			
 			$gym_list[] = $gym;
 		}
@@ -150,7 +177,7 @@ class PGGA
 		$gym_list = unique_multidim_array($gym_list,"Name");
 
 //print_r($gym_list);
-		
+
 		$this->gyms = $gym_list;
 	}
 
@@ -270,6 +297,8 @@ class PGGA
 
 	function Create_Overall_Gym_Statistics_Table()
 	{
+		$max_gym_level = ($this->IsPostRAID) ? 6 : 10;
+	
 		$table = array();
 		$title = '<b>Overall gym statistics</b>';
 		
@@ -279,15 +308,15 @@ class PGGA
 		
 		// Fill basic table content
 		$index = 0;
-		$teams = array( "Valor" => 0, "Mystic" => 0, "Instinct" => 0, "Uncontested" => 0, "Overall" => 0, "LVL10" => 0 );
+		$teams = array( "Valor" => 0, "Mystic" => 0, "Instinct" => 0, "Uncontested" => 0, "Overall" => 0, "Max_Lvl" => 0 );
 
 		foreach ($this->gyms as $gym)
 		{
 			$teams[$gym['Team']]++;
 			$teams['Overall']++;
 
-			if (isset($gym['Trainers']) && sizeof($gym['Trainers']) == 10)
-				$teams['LVL10']++;
+			if (isset($gym['Trainers']) && sizeof($gym['Trainers']) == $max_gym_level)
+				$teams['Max_Lvl']++;
 		}
 		
 		$table['Valor'] = array( 'Valor', sprintf("%s (%.2f%%)",$teams['Valor'],$teams['Valor']*100/$teams['Overall']) );
@@ -298,7 +327,7 @@ class PGGA
 			$table['Uncontested'] = array( 'Uncontested', sprintf("%s (%.2f%%)",$teams['Uncontested'],$teams['Uncontested']*100/$teams['Overall']) );
 		
 		$table['Overall'] = array( '', $teams['Overall'] );
-		$table['LVL10'] = array( 'Level 10', sprintf("%s (%.2f%%)",$teams['LVL10'],$teams['LVL10']*100/$teams['Overall']) );
+		$table['Max_Lvl'] = array( 'Level '.$max_gym_level, sprintf("%s (%.2f%%)",$teams['Max_Lvl'],$teams['Max_Lvl']*100/$teams['Overall']) );
 
 		return $this->Table_To_HTML($table,$title,200);
 	}
@@ -384,7 +413,7 @@ class PGGA
 			foreach ($team_trainers as $trainer => $trainer_info)
 			{
 				$table[++$index] = array( 
-					sprintf("<a href=\"?trainer=%s\">%s</a>",$trainer,$trainer),
+					sprintf("<a href=\"?trainer=%s",$trainer) . $GLOBALS['DATA_APPENDIX'] . sprintf("\">%s</a>",$trainer),
 					$trainer_info['Trainer_Level'],
 					$trainer_info['Count'],
 					$trainer_info['MaxCP'], 
@@ -395,6 +424,9 @@ class PGGA
 
 			$ret .= "<td valign=\"top\" style=\"border:0px;\">";
 			$ret .= $this->Table_To_HTML($table,$title,320,true);
+
+			$ret .= sprintf("N = %d", count($table)-1);
+		
 			$ret .= "</td>";
 		}
 
@@ -408,12 +440,13 @@ class PGGA
 		return $ret;
 	}
 
-	function Create_Pokemon_Statistics_Table($lvl10_only = true)
+	function Create_Pokemon_Statistics_Table($max_lvl_only = true)
 	{
 		$ret = "";
+		$max_gym_level = ($this->IsPostRAID) ? 6 : 10;
 	
-		if ($lvl10_only == true)
-			$ret .= "<h1><i>Level 10 gyms only:</i></h1>";
+		if ($max_lvl_only == true)
+			$ret .= "<h1><i>Level ".$max_gym_level." gyms only:</i></h1>";
 			
 
 	error_reporting(E_ALL & ~E_NOTICE);
@@ -429,7 +462,7 @@ class PGGA
 		{
 			if (!isset($gym['Trainers'])) continue;
 			
-			if ($lvl10_only && sizeof($gym['Trainers']) < 10) continue;
+			if ($max_lvl_only && sizeof($gym['Trainers']) < $max_gym_level) continue;
 		
 			foreach ($gym['Trainers'] as $key => $t)
 			{
@@ -479,27 +512,29 @@ class PGGA
 //print_r($mons);
 
 		// Build header row
-		$header_row = "Pokemon,#Gyms,AvgCP,,1,2,3,4,5,6,7,8,9,10";
+		$header_row = "Pokemon,#Gyms,AvgCP,";
+		for ($i = 1; $i <= $max_gym_level; $i++) $header_row .= ",".$i;
+
 		$table['Header'] = explode(",",$header_row);
 
 		// Fill basic table content
 		$index = 0;
 		foreach ($mons as $mon)
 		{
-			$tmp = array();
-			for ($i = 0; $i < 10; $i++)
-				$tmp[$i] = ($mon[$i]['Count'] == 0) ? "" : sprintf("%d<br>%.1f",$mon[$i]['Count'],$mon[$i]['AvgCP']);
-			
-			$table[++$index] = array( 
+			$tmp = array( 
 				$mon['Pokemon'], 
 				$mon['Count'],
 				sprintf("%.1f",$mon['AvgCP']), 
-				"",
-				$tmp[0],$tmp[1],$tmp[2],$tmp[3],$tmp[4],$tmp[5],$tmp[6],$tmp[7],$tmp[8],$tmp[9], // Gym levels 1-10
-			);
+				"",);
+				
+			for ($i = 0; $i < $max_gym_level; $i++)
+				$tmp[] = ($mon[$i]['Count'] == 0) ? "" : sprintf("%d<br>%.1f",$mon[$i]['Count'],$mon[$i]['AvgCP']);
+			
+			$table[++$index] = $tmp;
 		}
 
 		$ret .= $this->Table_To_HTML($table,$title,320);
+		$ret .= sprintf("<p>N = %d</p>", count($table)-1);
 		return $ret;
 	}
 
@@ -561,7 +596,7 @@ class PGGA
 				// Calculate volatility index
 				$vix = 0;
 				
-				if ($gym_list_1[$gym_name]['Team'] == $gym['Team'] && isset($gym['Trainers']))
+				if ($gym_list_1[$gym_name]['Team'] == $gym['Team'] && isset($gym['Trainers']) && isset($gym_list_1[$gym_name]['Trainers']))
 				{
 					foreach ($gym['Trainers'] as $key => $t)
 					{
@@ -618,7 +653,7 @@ class PGGA
 		$index = 1;
 		foreach ($gym_list as $gym_name => $gym)
 		{
-			$table[$index][] = sprintf("<a href=\"?gym=%s\">%s</a>",urlencode($gym_name),$gym_name);
+			$table[$index][] = sprintf("<a href=\"?gym=%s",urlencode($gym_name)) . $GLOBALS['DATA_APPENDIX'] . sprintf("\">%s</a>",$gym_name);
 			
 			if (isset($gym['Sector']))
 				$table[$index][] = $gym['Sector'];
@@ -653,6 +688,7 @@ class PGGA
 
 
 		$ret .= $this->Table_To_HTML($table,$title,800,true);
+		$ret .= sprintf("<p>N = %d</p>", count($table)-1);
 		return $ret;
 	}
 
@@ -661,12 +697,6 @@ class PGGA
 	{
 		foreach ($gym_list_2 as $gym_name => $gym)
 		{
-			if (isset($gym_list_1[$gym_name])) // Known gym
-			{
-				$lvl = (isset($gym_list_2[$gym_name]['Trainers'])) ? sizeof($gym_list_2[$gym_name]['Trainers']) : 0;
-				$gym_list_1{$gym_name}['History'][$timestamp] = array ('Team' => $gym_list_2[$gym_name]['Team'], 'Level' => $lvl);
-			}
-
 			$gym_list_1{$gym_name}['Team'] = $gym['Team'];
 			
 			if (isset($gym['Sector']))
@@ -674,6 +704,9 @@ class PGGA
 
 			if (isset($gym['Trainers']))
 				$gym_list_1{$gym_name}['Trainers'] = $gym['Trainers'];
+
+			$lvl = (isset($gym_list_2[$gym_name]['Trainers'])) ? sizeof($gym_list_2[$gym_name]['Trainers']) : 0;
+			$gym_list_1{$gym_name}['History'][$timestamp] = array ('Team' => $gym_list_2[$gym_name]['Team'], 'Level' => $lvl);
 		}
 		
 		ksort($gym_list_1);
@@ -704,7 +737,7 @@ class PGGA
 		$index = 1;
 		foreach ($gym_list as $gym_name => $gym)
 		{
-			$table[$index][] = sprintf("<a href=\"?gym=%s\">%s</a>",urlencode($gym_name),$gym_name);
+			$table[$index][] = sprintf("<a href=\"?gym=%s",urlencode($gym_name)) . $GLOBALS['DATA_APPENDIX'] . sprintf("\">%s</a>",$gym_name);
 			
 			if (isset($gym['Sector']))
 				$table[$index][] = $gym['Sector'];
@@ -731,6 +764,7 @@ class PGGA
 //print_r($table);
 
 		$ret .= $this->Table_To_HTML($table,$title,800,true);
+		$ret .= sprintf("<p>N = %d</p>", count($table)-1);
 		return $ret;
 	}
 
@@ -756,7 +790,7 @@ class PGGA
 					$trainer['Trainer_Level'] = $t['Trainer_Level'];
 				
 					$trainer['Gyms'][] = array(
-						'Gym_Name' => sprintf("<a href=\"?gym=%s\">%s</a>",urlencode($gym['Name']),$gym['Name']),
+						'Gym_Name' => sprintf("<a href=\"?gym=%s",urlencode($gym['Name'])) . $GLOBALS['DATA_APPENDIX'] . sprintf("\">%s</a>",$gym['Name']),
 						'Sector' => isset($gym['Sector']) ? $gym['Sector'] : "",
 						'Pokemon' => $t['Pokemon'],
 						'CP' => $t['CP'],
@@ -846,7 +880,16 @@ class PGGA
 		$ret .= "<p>";
 
 		$table = array();
-		$title = $target_gym['Team'] . "|<b>" . $timestamp . ", Pr " . $target_gym['Prestige'] . "</b>"; // Team (denotes color) | Info
+
+		// Title
+		if (isset($target_gym['FreeSpots']))
+		{
+			$title = $target_gym['Team'] . "|<b>" . $timestamp . ", Free spots: " . $target_gym['FreeSpots']; // Team (denotes color) | Info
+			if (isset($target_gym['Raid'])) $title .= ", " . $target_gym['Raid']; // Raid information
+			$title .= "</b>";
+		}
+		else
+			$title = $target_gym['Team'] . "|<b>" . $timestamp . ", Pr " . $target_gym['Prestige'] . "</b>"; // Team (denotes color) | Info
 		
 		// Build header row
 		$header_row = "Nr,Trainer,Lvl,Pokemon,CP";
@@ -859,7 +902,7 @@ class PGGA
 		{
 			$table[++$index] = array(
 				$index,
-				sprintf("<a href=\"?trainer=%s\">%s</a>",$t['Trainer'],$t['Trainer']),
+				sprintf("<a href=\"?trainer=%s",$t['Trainer']) . $GLOBALS['DATA_APPENDIX'] . sprintf("\">%s</a>",$t['Trainer']),
 				$t['Trainer_Level'],
 				$t['Pokemon'],
 				$t['CP'],

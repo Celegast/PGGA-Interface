@@ -27,7 +27,7 @@ A:HOVER { color: black; text-decoration: underline;  }
 #site /* contains all content */
 {
 	position: relative;
-	width: 1350px;
+	width: 1450px;
 	height: 100%;
 	margin: auto;
 }
@@ -60,7 +60,7 @@ A:HOVER { color: black; text-decoration: underline;  }
 
 #bottom /* contains footer */
 {
-	width: 1354px;
+	width: 1454px;
 	height: 50px;
 	/* background:url('../img/bottom.png') top no-repeat; */
 	border-top:    1px solid  #e95000;
@@ -71,7 +71,7 @@ A:HOVER { color: black; text-decoration: underline;  }
 	float: top;
 	width: auto;
 	/*height: 100%;*/
-	/*margin-left: 255px;*/
+	margin-left: 255px;
 	/*margin-right: 220px;*/
 	border-left: 0px solid #696969;
 	padding: 5 0 10 0;
@@ -272,7 +272,7 @@ margin: 0px 200px 0px 200px;
 #leftmenu /* contains widgets */
 {
 float: left;
-width: 155px;
+width: 255px;
 border-bottom: 2px dashed #e95000; /* other options: e.g. dashed */
 border-right: 2px dashed #e95000;
 display: inline-block;
@@ -287,7 +287,7 @@ padding: 20 5 20 0;
 	margin-top: 1px;
 	/*display: inline;*/
 	display: table;
-	width: 158px;
+	width: 258px;
 
 	color: black;
 	font-size: 8pt;
@@ -359,3 +359,76 @@ background: none;
 color: red;
 }
 
+
+
+/******* top navigation *******/
+ul#menu {
+	position: absolute;
+	bottom: 0;
+	/*
+	left: 20;
+	margin-left: 20px;
+	*/
+	margin-bottom: 4px;
+	border: 0px solid red;
+}
+ul#menu li {
+	float: left;
+	position: relative;
+	margin-left: -10px;
+	margin-top: 4px;
+	display: inline;
+}
+ul#menu li a {
+	position: relative;
+	width: auto; /* width + padding-left = 128px */
+	height: 25px; /* height + padding-top = 35px */
+	/*
+	display: block;
+	background-image: url('tabs.png');
+	background-position: center center;
+	text-decoration: none;
+	*/
+	color: black;
+	font-size: 14px;
+	padding-top: 10px;
+	text-align: left;
+	padding-left: 36px;
+}
+
+ul#menu li.current a {
+	background-position: top;
+	color: red;
+}
+ul#menu li a:hover {
+	background-position: bottom;
+	color: red;
+}
+ul#menu li.current a:hover {
+	background-position: top; /* To Prevent the Current tab from changing colour on hover */
+	color: red;
+}
+ul#menu li.current {
+	z-index: 100;
+}
+ul#menu li.m0 {
+	z-index: 100;
+}
+ul#menu li.m1 {
+	z-index: 99;
+}
+ul#menu li.m2 {
+	z-index: 98;
+}
+ul#menu li.m3 {
+	z-index: 97;
+}
+ul#menu li.m4 {
+	z-index: 96;
+}
+ul#menu li.m5 {
+	z-index: 95;
+}
+ul#menu li.m6 {
+	z-index: 94;
+}

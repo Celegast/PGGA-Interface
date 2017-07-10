@@ -7,9 +7,17 @@
 include "pgga.php";
 include "pokedex.php"; // $pokedex
 
-// Get list of data files (folder '\data')
+$GLOBALS['DATA_APPENDIX'] = "";
+if (isset($_GET['data']))
+{
+	$_data_folder = htmlspecialchars(strip_tags($_GET['data']));
+	$GLOBALS['DATA_APPENDIX'] = "&data=" . urlencode($_data_folder);
+}
+else
+	$_data_folder = "data";
+
+// Get list of data files (folder $_data_folder)
 $_data_files = array();
-$_data_folder = "data";
 foreach (glob($_data_folder."/*.txt") as $filename) {
     $_data_files[] = $filename;
 }
@@ -34,6 +42,7 @@ if (isset($_GET['trainer']))
 
 
 // Vars
+$menu_str = array("data" => "Graz now (since July 8, 2017)", "data/graz2" => "Graz pre/post raid transition (June 19, 2017 &amp; July 9, 2017)", "data/graz1" => "Graz pre raids (May 5 - June 19, 2017)",);
 $mainmenu_appdx = "";
 $MESSAGE = "";
 $SHOW_MESSAGE = false;
@@ -76,6 +85,28 @@ table.sortable th
 	<div id="top">
 	<p>&nbsp;</p>
 	<font size=45><b>Pokemon Go - Gym Analysis</b></font>
+
+	<ul id="menu">
+	<?php
+	$i = -1;
+
+	foreach ($menu_str as $data_folder => $menu_item)
+	{
+		$i++;
+		
+		echo "		<li class=\"";
+		if ($_data_folder == $data_folder) echo "current";
+			else echo "m" . $i;
+		echo "\">";
+		
+		$tmp = ($i == 0) ? "" : ("?data=".urlencode($data_folder));
+		echo "<a href=\"index.php" . $tmp . "\">" . $menu_item . "</a>";
+
+		echo "</li>\n";
+	}
+	?>
+	</ul>
+
 	</div>
 	
 	<div id="middle">
@@ -89,7 +120,7 @@ table.sortable th
 	$nr = 1;
 	foreach ($_data_files as $data_file)
 	{
-		echo "<li><a href=\"index.php?mid=" . $data_file . "\"";
+		echo "<li><a href=\"index.php?mid=" . $data_file . $GLOBALS['DATA_APPENDIX'] . "\"";
 		if ($_mid == $data_file)
 			echo " id=\"selected\"";
 		
@@ -98,12 +129,12 @@ table.sortable th
 	}
 
 	// Gym History
-	echo "<li><a href=\"index.php?mid=History\"";
+	echo "<li><a href=\"index.php?mid=History" . $GLOBALS['DATA_APPENDIX'] . "\"";
 	if ($_mid == "History") echo " id=\"selected\"";
 	echo ">Gym History</a></li>\n";
 
 	// Volatility Index
-	echo "<li><a href=\"index.php?mid=VIX\"";
+	echo "<li><a href=\"index.php?mid=VIX" . $GLOBALS['DATA_APPENDIX'] . "\"";
 	if ($_mid == "VIX") echo " id=\"selected\"";
 	echo ">Volatility Index (VIX)</a></li>\n";
 
@@ -365,7 +396,7 @@ error_reporting(E_ALL);
 			<div class="tree">
 <?php
 if (isset($menu_footer_str[$_mid]))
-	echo "<a href=\"index.php?mid=" . $_mid . "\">" . $menu_footer_str[$_mid] . "</a>\n";
+	echo "<a href=\"index.php?mid=" . $_mid . $GLOBALS['DATA_APPENDIX'] . "\">" . $menu_footer_str[$_mid] . "</a>\n";
 ?>
 			</div>
 			<div class="toplink"><a href="#">back to top &uarr;</a></div>
