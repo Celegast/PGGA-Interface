@@ -133,9 +133,9 @@ class PGGA
 				$gym['FreeSpots'] = str_replace("Freie Plätze: ","",array_shift($row));
 			else
 				$gym['Prestige'] = str_replace("Pr: ","",array_shift($row));
-			
+
 			// Players
-			while (sizeof($row) > 3)
+			while (sizeof($row) > 1 && substr($row[0],0,15) !== "Letztes Update:")
 			{
 				$mon = explode(", ",array_shift($row));
 				$trainer = explode(" (",str_replace(")","",array_shift($row)));
@@ -148,9 +148,6 @@ class PGGA
 				}
 				else
 					$gym['Trainers'][] = array( "Trainer" => $trainer[0], "Trainer_Level" => $lvl[0], "Pokemon" => $pokedex[$mon[0]], "CP" => $mon[1] );
-					
-				if (substr($row[0],0,15) === "Letztes Update:")
-					break;
 			}
 			
 			// Erase duplicate trainers (caused by a bug on gomap.eu in the new post-raid update)
