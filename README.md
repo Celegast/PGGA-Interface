@@ -3,11 +3,13 @@ _Pokemon Go - Gym Analysis (PGGA)_ is a tool to collect and analyze data of gyms
 
 The PGGA-Interface transforms the raw data files (input) into a report (HTML output).
 
+See [pogo.ansoft.at](http://pogo.ansoft.at) as an example for **Graz, Austria**.
+
 ## User manual
 ### index.php
 Responsible for menu handling and output display.
 #### GET parameters
-* **mid**: Attached to the selection of the left menu bar. Either specifies a gym data file (e.g. _data/g_20170713_155143.txt_), _History_ for the Gym History or _VIX_ for the Volatility Index. Default value: Latest gym data file.
+* **mid**: Attached to the selection of the left menu bar. It either specifies a gym data file (e.g. _data/g_20170713_155143.txt_), the Gym History (_History_) or the Volatility Index (_VIX_). Default value: Latest gym data file.
 * **gym**: Gym name. History of the specified gym.
 * **trainer**: Trainer name. History of the specified trainer.
 * **data**: Attached to the selection of the top horizontal menu bar (defined by $menu_str). Can be used to change between data sets (= sub-folders in folder _data_). Default value: data.
@@ -44,14 +46,14 @@ Array
                             [CP] => Pokemon_CP
                             [AssignedSince] => (optional)
                         )
-					...
+...
                 )
 
             [LastUpdate] =>  LastUpdate_String
             [Sector] => Sector_Number (optional)
             [Raid] => Raid_Information (optional)
         )
-	...
+...
 }
 ```
 The array gets stored in the public class variable _$gyms_.
@@ -65,18 +67,18 @@ Array
         (
             [0] => Column_1_Title
             [1] => Column_2_Title
-			...
+...
         )
 
     [1] => Array
         (
             [0] => Cell_1_1
             [1] => Cell_2_1
-			...
+...
         )
 }
 ```
-Note: By putting a string in the format _(CSS_id)|_ in front of a cell content string you can set the cells' id selector. See _pgga.php_ for examples.
+Note: By putting a string in the format "CSS_id|" in front of a cell content string you can set the cells' id selector. See _pgga.php_ for examples.
 
 ## Installation guide
 * Upload the files to a server that supports PHP or use a local server (e.g. [XAMPP](https://www.apachefriends.org/index.html)).
@@ -85,7 +87,7 @@ Note: By putting a string in the format _(CSS_id)|_ in front of a cell content s
 ### XAMPP settings
 In order to run PGGA on your local machine you need to add a few lines to the Apache configuration file.
 - Run XAMPP and open **Apache httpd.conf**.
-- In Section _<IfModule alias_module>_ add the following:
+- In section _\<IfModule alias_module\>_ add the following:
 ```
 Alias /PGGA "E:\PGGA"
 <Directory "E:\PGGA">
