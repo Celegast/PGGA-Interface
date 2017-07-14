@@ -330,7 +330,7 @@ error_reporting(E_ALL);
 			echo "<p>&nbsp;</p>";
 			echo $pgga->Create_Trainer_Statistics_Table();
 			echo "<p>&nbsp;</p>";
-			echo $pgga->Create_Pokemon_Statistics_Table(true); // $lvl10_only = true
+			echo $pgga->Create_Pokemon_Statistics_Table(true); // $max_lvl_only = true
 
 error_reporting(E_ALL);
 
