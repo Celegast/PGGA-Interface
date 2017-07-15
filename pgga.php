@@ -167,7 +167,8 @@ class PGGA
 			if (sizeof($row) > 0)
 				$gym['Raid'] = array_shift($row);
 			
-			$gym_list[] = $gym;
+			if (isset($gym['Trainers']) && count($gym['Trainers']) > 0) // Only add gyms with at least one trainer
+				$gym_list[] = $gym;
 		}
 		
 		// Erase duplicates
