@@ -1,7 +1,7 @@
 # Pokemon Go - Gym Analysis Interface (PHP)
 _Pokemon Go - Gym Analysis (PGGA)_ is a tool to collect and analyze data of gyms and trainers in _Pokemon Go_.
 
-The PGGA-Interface transforms the raw data files (input) into a report (HTML output).
+The PGGA-Interface transforms the raw data files (input, gathered e.g. by [PGGA-GoMapBot](https://github.com/Celegast/PGGA-GoMapBot)) into a report (HTML output).
 
 See [pogo.ansoft.at](http://pogo.ansoft.at) as an example for **Graz, Austria**.
 
