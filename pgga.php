@@ -105,7 +105,7 @@ class PGGA
 				else
 					$cell = (sizeof($tmp) >= 3) ? ($tmp[1].", ".str_replace("> ","",$tmp[2])) : trim(end($tmp));
 				
-				$cell = str_replace(array("static/forts/","static/icons/",".png"),array(""),$cell); 
+				$cell = str_replace(array("/static/forts/","static/forts/","/static/icons/","static/icons/",".png"),array(""),$cell); 
 
 				$content[$r][$c++] = $cell;
 			}
