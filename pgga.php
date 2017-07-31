@@ -396,7 +396,7 @@ class PGGA
 		$ret .= "<tr><td colspan=3 style=\"border:0px;\"><font size=\"-2\"><br>Note: Use column headers to sort tables</font></td></tr><tr>";
 		foreach ($trainers as $team => $team_trainers)
 		{
-			//if ($team == "Uncontested") continue;
+			if ($team == "Uncontested") continue;
 			
 			$table = array();
 			$title = "<b>" . $team . "</b>";
